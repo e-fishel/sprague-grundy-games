@@ -1,0 +1,559 @@
+<html lang="en"><head></head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze* Game</title>
+    <style>
+        body {
+            font-family: monospace, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            margin: 0;
+            margin-bottom: 10px;
+            font-size: 4em;
+            color: #333;
+        }
+        h2 {
+            margin: 0;
+            font-size: 2em;
+            color: #555;
+        }
+        h3 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #555;
+        }
+        .subinfo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            width: 100%;
+        }
+        .game-container {
+            display: flex;
+            align-items: flex-end;
+            margin-top: 20px;
+        }
+        .wrap-table {
+            width: 250px;
+            height: 350px;
+            margin: 0 45px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .table {
+            display: grid;
+            /* grid-template-columns: repeat(5, 50px); */
+            /* grid-template-rows: repeat(5, 50px); */
+        }
+        .cell {
+            /* display: flex;
+            justify-content: center;
+            align-items: center; */
+            /* flex-direction: row; */
+            position: relative;
+            display: flex;
+            margin: auto;
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            transition: background-color 0.2s;
+        }
+        .cell.top-left { border-radius: 6px 0 0 0; }
+        .cell.top-right { border-radius: 0 6px 0 0; }
+        .cell.bottom-right { border-radius: 0 0 6px 0; }
+        .cell.bottom-left { border-radius: 0 0 0 6px; }
+        .token {
+            border-radius: 5px;
+            width: 100%;
+            margin: 0 2px;
+            height: 35px;
+            background-color: #2843ca;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .token-wrap {
+            display: flex;
+            flex-direction: row;
+            padding: auto;
+            margin: auto;
+            width: 39px;
+            height: 35px;
+        }
+        .cell-playable {
+            background-color: #8d92ad;
+            /* background-color: #50578a; */
+            cursor: pointer;
+        }
+        @keyframes flashing {
+            from { background-color: white; }
+            to { background-color: rgb(251, 159, 159); }
+        }
+        .modifiable {
+            cursor: pointer;
+            animation: flashing 0.6s ease-in-out 0s infinite alternate;
+        }
+        .cell.black {
+            width: 46px;
+            height: 46px;
+            background-color: transparent;
+            z-index: 3;
+        }
+        .table-1 > .cell.black {
+            background-image: repeating-linear-gradient(
+                135deg,
+                #2c0f70 0px,
+                #2c0f70 8px,
+                transparent 8px,
+                transparent 11.79px
+            );
+            box-shadow: #2c0f70 0 0 0 3px;
+        }
+        .table-2 > .cell.black {
+            background-image: repeating-linear-gradient(
+                135deg,
+                #7a3315 0px,
+                #7a3315 8px,
+                transparent 8px,
+                transparent 11.79px
+            );
+            box-shadow: #7a3315 0 0 0 3px;
+        }
+        .table-3 > .cell.black {
+            background-image: repeating-linear-gradient(
+                135deg,
+                #0a481d 0px,
+                #0a481d 8px,
+                transparent 8px,
+                transparent 11.79px
+            );
+            box-shadow: #0a481d 0 0 0 3px;
+        }
+        .cell:not(.black) {
+            outline: 1px solid #777;
+        }
+        .token-1 { background-color: #4c00ff80; }
+        .token-2 { background-color: #ff4d0080; }
+        .token-3 { background-color: #00ff4c80; }
+        .token:hover {
+            background-color: #151a41;
+        }
+        .token-chosen {
+            background-color: #151a41;
+        }
+        .table-label {
+            margin-top: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            height: 28.8px;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .button {
+            font: inherit;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #1976D2;
+        }
+        .turn-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5em;
+            color: #333;
+        }
+        .in-cell {
+            position: absolute;
+            margin: auto;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            height: 23px;
+            width: 16px;
+            font-size: 1.2em;
+            color: #333;
+            text-align: center;
+            z-index: 1;
+        }
+        .cell-playable > .in-cell {
+            color: #eee;
+            font-weight: bold;
+        }
+        #current-player, #grundy-number {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Maze*</h1>
+
+    <div class="subinfo-container">
+        <div class="omniscient"> <h2>Estado: <span id="grundy-number"></span></h2> </div>
+        <div class="omniscient"> <h3 id="state-words">ah</h3> </div>
+    </div>
+
+    <div class="turn-indicator">Jugador Actual: <span id="current-player">Jugador 1</span></div>
+
+    <div class="game-container">
+        <!-- <div class="wrap-table"><div class="table table-1">
+        </div><div class="table-label"><div class="omniscient">eh</div></div></div>
+        <div class="wrap-table"><div class="table table-2">
+        </div><div class="table-label"><div class="omniscient">eh</div></div></div>
+        <div class="wrap-table"><div class="table table-3">
+        </div><div class="table-label"><div class="omniscient">eh</div></div></div> -->
+    </div>
+
+    <div class="controls">
+        <button class="button" id="btn-reset">Reset</button>
+        <button class="button" id="btn-rollback">Deshacer</button>
+        <button class="button" id="btn-omniscience">Análisis</button>
+        <button class="button" id="btn-cell-modif">Modificar Celdas</button>
+        <!-- <button class="button" id="btn-modif-">Modificar Celdas</button> -->
+        <button class="button">Exit</button>
+    </div>
+
+    <script>
+        let tables = [
+            // [
+            //     [ 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0 ],
+            //     [ 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 ],
+            //     [ 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1 ],
+            //     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+            //     [ 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ],
+            // ],
+            [
+                [ 0, 0, 0/* , 1, 1 */ ],
+                [ 0, 1, 0/* , 0, 0 */ ],
+                [ 0, 1, 0/* , 0, 1 */ ],
+                [ 0, 0, 0/* , 0, 0 */ ],
+                [ 1, 0, 0/* , 1, 0 */ ],
+            ],
+            [
+                [ 0, 0, 1, 0, 0 ],
+                [ 0, 0, 0, 0, 0 ],
+                [ 0, 0, 1, 0, 0 ],
+            ],
+            [
+                [ 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 1, 1 ],
+                [ 0, 0, 0, 0, 0 ],
+                [ 0, 1, 1, 0, 1 ],
+                [ 1, 1, 1, 0, 0 ],
+            ],
+        ]
+        for (let k = 0; k < tables.length; k++) {
+            for (let i = 0; i < tables[k].length; i++) {
+                for (let j = 0; j < tables[k][i].length; j++) {
+                    console.assert(tables[k][i][j] === 0 || tables[k][i][j] === 1, 'invalid cell')
+                }
+            }
+        }
+        let tablesMat = Array(tables.length).fill().map((_, k) => Array(tables[k].length).fill().map((_, i) => Array(tables[k][i].length).fill().map((_, j) => -16)))
+        let grundy = Array(tables.length).fill().map((_, k) => Array(tables[k].length).fill().map((_, i) => Array(tables[k][i].length).fill().map((_, j) => -16)))
+        let grundyTips = Array(tables.length).fill().map((_, k) => Array(tables[k].length).fill().map((_, i) => Array(tables[k][i].length).fill().map((_, j) => -16)))
+        let divTables = []
+        const gameContainer = document.querySelector('.game-container')
+        for (let k = 0; k < tables.length; k++) {
+            let wrapper = document.createElement('div')
+            wrapper.classList.add('wrap-table')
+            gameContainer.appendChild(wrapper)
+            let curTable = document.createElement('div')
+            curTable.classList.add('table', `table-${k+1}`)
+            curTable.style.gridTemplateRows = `repeat(${tables[k].length}, 50px)`
+            curTable.style.gridTemplateColumns = `repeat(${tables[k][0].length}, 50px)`
+            wrapper.appendChild(curTable)
+            divTables.push(curTable)
+            let tableLabel = document.createElement('div')
+            tableLabel.classList.add('table-label')
+            wrapper.appendChild(tableLabel)
+            let omniscient = document.createElement('div')
+            omniscient.classList.add('omniscient')
+            tableLabel.appendChild(omniscient)
+            for (let i = 0; i < tables[k].length; i++) {
+                for (let j = 0; j < tables[k][i].length; j++) {
+                    let cell = document.createElement('div')
+                    cell.classList.add('cell')
+                    curTable.appendChild(cell)
+                    tablesMat[k][i][j] = cell
+                }
+            }
+        }
+        const grundyNumber = document.getElementById('grundy-number')
+        const spanCurrentPlayer = document.getElementById('current-player')
+        const tableLabels = document.querySelectorAll('.table-label > .omniscient')
+        const stateWords = document.getElementById('state-words')
+        const btnRollback = document.getElementById('btn-rollback')
+        const btnReset = document.getElementById('btn-reset')
+        const btnOmniscience = document.getElementById('btn-omniscience')
+        const btnCellModif = document.getElementById('btn-cell-modif')
+        let divTokens = {}
+        for (let k = 0; k < tables.length; k++) {
+            for (let i = 0; i < tables[k].length; i++) {
+                for (let j = 0; j < tables[k][i].length; j++) {
+                    if (tables[k][i][j] === 1)
+                        tablesMat[k][i][j].classList.add('black')
+                    if ((i === 0 || i === tables[k].length-1) && (j === 0 || j === tables[k][i].length-1))
+                        tablesMat[k][i][j].classList.add(`${i === 0 ? 'top' : 'bottom'}-${j === 0 ? 'left' : 'right'}`)
+                    let wrap = document.createElement('div')
+                    wrap.classList.add('token-wrap')
+                    tablesMat[k][i][j].appendChild(wrap)
+                    let tip = document.createElement('div')
+                    tip.classList.add('omniscient', 'in-cell')
+                    tablesMat[k][i][j].appendChild(tip)
+                    grundyTips[k][i][j] = tip
+                }
+            }
+        }
+        let tokens = {
+            0: { k: 0, i: 0, j: 0 },
+            // 1: { k: 0, i: 1, j: 2 },
+            // 2: { k: 0, i: 3, j: 2 },
+            1: { k: 1, i: 0, j: 0 },
+            // { k: 1, i: 1, j: 0 },
+            // { k: 1, i: 0, j: 2 },
+            2: { k: 2, i: 0, j: 0 },
+        }
+        for (const [ id, ttuple ] of Object.entries(tokens)) {
+            const { k, i, j } = ttuple
+            let token = document.createElement('div')
+            token.classList.add('token', `token-${k+1}`)
+            token.setAttribute('token-id', id)
+            tablesMat[k][i][j].querySelector('.token-wrap').appendChild(token)
+            divTokens[id] = token
+        }
+        let plays = []
+        let playable = []
+        let isOmniscient = false
+        let isPlayer1 = true
+        let selToken = -1
+        let isModifMode = 0
+        const trans = ({ k, i, j }) => {
+            let ans = []
+            for (let i2 = i+1; i2 < tables[k].length && tables[k][i2][j] === 0; i2++) {
+                ans.push({ k, i: i2, j })
+            }
+            for (let j2 = j+1; j2 < tables[k][i].length && tables[k][i][j2] === 0; j2++) {
+                ans.push({ k, i, j: j2 })
+            }
+            return ans
+        }
+        const showPlayable = () => {
+            for (let k = 0; k < tables.length; k++) {
+                for (let i = 0; i < tables[k].length; i++) {
+                    for (let j = 0; j < tables[k][i].length; j++) {
+                        tablesMat[k][i][j].classList.remove('cell-playable')
+                        if (tables[k][i][j] === 1) continue
+                    }
+                }
+            }
+            for (const { k, i, j } of playable) {
+                tablesMat[k][i][j].classList.add('cell-playable')
+            }
+        }
+        const fselToken = (id) => {
+            if (selToken !== -1) {
+                divTokens[selToken].classList.remove('token-chosen')
+                playable = []
+            }
+            selToken = id
+            if (id === -1) return
+            divTokens[id].classList.add('token-chosen')
+        }
+        Object.entries(divTokens).forEach(([ id, token ]) => {
+            token.addEventListener('click', e => {
+                if (isModifMode) return
+                if (selToken === id) {
+                    fselToken(-1)
+                    showPlayable()
+                    showAnalysis()
+                    return
+                }
+                fselToken(id)
+                playable = id === -1 ? [] : trans(tokens[id])
+                showPlayable()
+                showAnalysis()
+            })
+        })
+        const play = ({ k, i, j }) => {
+            console.log('played at', { k, i, j })
+            if (selToken === -1 || isModifMode) return
+            const { k: tk, i: ti, j: tj } = tokens[selToken]
+            if (!playable.some(x => x.k === k && x.i === i && x.j === j)) return
+            isPlayer1 = !isPlayer1
+            spanCurrentPlayer.innerText = (isPlayer1 ? 'Jugador 1' : 'Jugador 2')
+            plays.push({ k: tk, i: ti, j: tj, oldSel: selToken })
+            playable = []
+            showPlayable()
+            tokens[selToken] = { k, i, j }
+            console.assert(divTokens[selToken].classList.contains('token-chosen'), 'moved a non-chosen node??')
+            divTokens[selToken].classList.remove('token-chosen')
+            tablesMat[k][i][j].querySelector('.token-wrap').insertAdjacentElement('beforeend', divTokens[selToken])
+            fselToken(-1)
+            showPlayable()
+        }
+        const rollback = () => {
+            if (selToken !== -1) {
+                divTokens[selToken].classList.remove('token-chosen')
+                playable = []
+                showPlayable()
+            }
+            selToken = -1
+            if (plays.length === 0) return
+            const { k, i, j, oldSel } = plays.pop()
+            tokens[oldSel] = { k, i, j }
+            tablesMat[k][i][j].querySelector('.token-wrap').insertAdjacentElement('beforeend', divTokens[oldSel])
+            isPlayer1 = !isPlayer1
+            spanCurrentPlayer.innerText = (isPlayer1 ? 'Jugador 1' : 'Jugador 2')
+        }
+        const mex = (ve) => {
+            ve.sort((a, b) => a - b)
+            ve = ve.filter((i, j, a) => j === 0 || a[j-1] != a[j])
+            let j = 0
+            while (j < ve.length && ve[j] === j) j++
+            return j
+        }
+        const calcGrundy = () => {
+            for (let k = 0; k < tables.length; k++) {
+                for (let i = tables[k].length-1; i >= 0; i--) {
+                    for (let j = tables[k][i].length-1; j >= 0; j--) {
+                        if (tables[k][i][j] === 1) continue
+                        grundy[k][i][j] = mex(trans({ k, i, j }).map(({ k, i, j }) => grundy[k][i][j]))
+                    }
+                }
+            }
+        }
+        const showAnalysis = () => {
+            calcGrundy()
+            let acc = Object.values(tokens).reduce((t, { k, i, j }) => t^grundy[k][i][j], 0)
+            const { k: tk, i: ti, j: tj } = selToken !== -1 ? tokens[selToken] : {}
+            grundyNumber.innerText = acc
+            stateWords.innerText = (acc === 0 ? 'Perdedor' : 'Ganador')
+            document.querySelectorAll('.omniscient.in-cell').forEach(i => {
+                i.innerText = ''
+            })
+            for (let k = 0; k < tables.length; k++) {
+                for (let i = 0; i < tables[k].length; i++) {
+                    for (let j = 0; j < tables[k][i].length; j++) {
+                        if (tables[k][i][j] === 1) continue
+                        if (playable.some(x => x.k === k && x.i === i && x.j === j)) {
+                            grundyTips[k][i][j].innerText = acc^grundy[tk][ti][tj]^grundy[k][i][j]
+                        } else {
+                            grundyTips[k][i][j].innerText = grundy[k][i][j]
+                        }
+                    }
+                }
+            }
+            showPileSizes()
+        }
+        const showPileSizes = () => {
+            let pileGrundy = Array(tables.length).fill().map(() => 0)
+            for (const { k, i, j } of Object.values(tokens)) {
+                pileGrundy[k] ^= grundy[k][i][j]
+            }
+            for (let k = 0; k < tables.length; k++) {
+                tableLabels[k].innerText = pileGrundy[k]
+            }
+        }
+        const modif = ({ k, i, j }) => {
+            console.assert(isModifMode, 'modif in not modif mode?')
+            if (tables[k][i][j] === 0) {
+                tables[k][i][j] = 1;
+                tablesMat[k][i][j].classList.add('black')
+            } else {
+                tables[k][i][j] = 0;
+                tablesMat[k][i][j].classList.remove('black')
+                if (playable.some(x => x.k === k && x.i === i && x.j === j)) {
+                    grundyTips[k][i][j].innerText = acc^grundy[tk][ti][tj]^grundy[k][i][j]
+                } else {
+                    grundyTips[k][i][j].innerText = grundy[k][i][j]
+                }
+            }
+        }
+        for (let k = 0; k < tables.length; k++) {
+            for (let i = 0; i < tables[k].length; i++) {
+                for (let j = 0; j < tables[k][i].length; j++) {
+                    tablesMat[k][i][j].addEventListener('click', e => {
+                        if (isModifMode) {
+                            modif({ k, i, j })
+                            showAnalysis()
+                            return
+                        }
+                        play({ k, i, j })
+                        showPlayable()
+                        showAnalysis()
+                    })
+                }
+            }
+        }
+        btnRollback.addEventListener('click', e => {
+            rollback()
+            showAnalysis()
+        })
+        btnReset.addEventListener('click', e => {
+            fselToken(-1)
+            showPlayable()
+            while (plays.length > 0) rollback()
+            showAnalysis()
+        })
+        btnOmniscience.addEventListener('click', e => {
+            isOmniscient = !isOmniscient
+            for (const el of document.querySelectorAll('.omniscient')) {
+                if (isOmniscient)
+                    el.removeAttribute('hidden')
+                else
+                    el.setAttribute('hidden', '')
+            }
+            showAnalysis()
+        })
+        btnCellModif.addEventListener('click', e => {
+            isModifMode = !isModifMode
+            fselToken(-1)
+            showPlayable()
+            if (isModifMode) {
+                document.querySelectorAll('.cell').forEach(i => {
+                    i.classList.add('modifiable')
+                })
+            } else {
+                document.querySelectorAll('.cell').forEach(i => {
+                    i.classList.remove('modifiable')
+                })
+            }
+        })
+        // todo: undo modifs, toggles
+        // todo: add tokens
+
+        for (const el of document.querySelectorAll('.omniscient')) {
+            if (isOmniscient)
+                el.removeAttribute('hidden')
+            else
+                el.setAttribute('hidden', '')
+        }
+        showAnalysis()
+    </script>
+
+</body></html>
