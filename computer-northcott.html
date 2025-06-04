@@ -468,7 +468,7 @@
                 return { i, j }
             }}
             for (let i = 0; i < 8; i++) {
-                if (tokens[8+i] < 7) moves.push(i)
+                if (tokens[i] !== 6) moves.push(i)
             }
             if (moves.length === 0) return false // game over
             moves.sort(() => Math.random()-0.5)
