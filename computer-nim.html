@@ -151,11 +151,11 @@
     <script>
         let szs = Array(6) // [ 4, 2, 3, 5, 6, 2, 2, 8 ]
         // let szs = [ 5, 7, 9 ]
-        const rawPiles = new URL(window.location.href).searchParams.get('piles')
-        szs = (rawPiles === null || !/^\d(?:,\d+)*$/.test(rawPiles) ? szs : rawPiles.split(',').map(Number))
         for (let i = 0; i < szs.length; i++) {
             szs[i] = 0|Math.random()*7+1;
         }
+        const rawPiles = new URL(window.location.href).searchParams.get('piles')
+        szs = (rawPiles === null || !/^\d(?:,\d+)*$/.test(rawPiles) ? szs : rawPiles.split(',').map(Number))
         // for (let i = 0; i < szs.length; i++) {
         //     console.assert(0 <= szs[i] && szs[i] <= 7, 'invalid sizes')
         // }
@@ -279,7 +279,7 @@
                     showAnalysis()
                     showPileSizes()
                     let timer_then = ++timer
-                    const playAt = playComputer(timer_then)
+                    const playAt = playComputer()
                     if (playAt === false) return // game over
                     focused = stonesMat[playAt.i][playAt.j]
                     focused.classList.add('stone-hovered')

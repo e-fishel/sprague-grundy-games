@@ -188,17 +188,11 @@
         const btnRollback = document.getElementById('btn-rollback')
         const btnReset = document.getElementById('btn-reset')
         const btnOmniscience = document.getElementById('btn-omniscience')
-        // for (let i = 0; i < 6; i++) {
-        //     for (let j = szs[i]; j < 7; j++) {
-        //         stonesMat[i][j].classList.add('taken')
-        //     }
-        // }
         let plays = []
         let isOmniscient = false
         let isPlayer1 = true
-        const play = (i, j) => {
+        const play = ({ i, j }) => {
             console.log('played at', { i, j })
-            if (szs[i] <= j) return false
             isPlayer1 = !isPlayer1
             spanCurrentPlayer.innerText = (isPlayer1 ? 'Jugador 1' : 'Jugador 2')
             plays.push({ i, j, oldSz: szs[i] })
@@ -206,7 +200,6 @@
                 stonesMat[i][k].classList.add('taken')
             }
             szs[i] = j;
-            return true
         }
         const rollback = () => {
             if (plays.length === 0) return
@@ -236,7 +229,7 @@
         for (let i = 0; i < szs.length; i++) {
             for (let j = 0; j < szs[i]; j++) {
                 stonesMat[i][j].addEventListener('click', e => {
-                    if (play(i, j) === false) return
+                    play({ i, j })
                     showAnalysis()
                     showPileSizes()
                 })
