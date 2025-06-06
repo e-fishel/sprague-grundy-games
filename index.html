@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprague-Grundy Games</title>
+    <style>
+        body {
+            font-family: monospace, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        h2 a {
+            text-decoration: none;
+            color: #555;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #555;
+        }
+        
+        #cuerpoPrincipal {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px 20px;
+            max-width: 1200px;
+        }
+        
+        .cuadroJuego {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .cuadroJuego:hover {
+            transform: scale(1.03);
+        }
+
+        .cuadroJuego img {
+            width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        #imagenJuego2 {
+            margin-top: 22px;
+        }
+
+        #btnReglasJuego2 {
+            margin-top: 22px;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .button {
+            font: inherit;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #1976D2;
+        }
+        .siteName {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="siteName">Sprague-Grundy Games</div>
+
+    <div class="controls">
+        <button class="button" onclick="location.href='player/maze.html'">Maze</button>
+        <button class="button" onclick="location.href='player/nim.html'">Nim</button>
+        <button class="button" onclick="location.href='player/northcott.html'">Northcott</button>
+    </div>
+
+  <main id="cuerpoPrincipal">
+    <section id="juego1" class="cuadroJuego">
+        <h2><a href="player/maze.html">Maze</a></h2>
+      <a href="player/maze.html"><img src="media/mazeExample.png" alt="Maze example" id="imagenJuego1"></a>
+      <button class="button" onclick="location.href='rules/maze.html'" id="btnReglasJuego1">Reglas de Maze</button>
+    </section>
+    
+    <section id="juego2" class="cuadroJuego">
+        <h2><a href="player/nim.html">Nim</a></h2>
+        <a href="player/nim.html"><img src="media/nimExample.png" alt="Nim example" id="imagenJuego2"></a>
+        <button class="button" onclick="location.href='rules/nim.html'" id="btnReglasJuego2">Reglas de Nim</button>
+    </section>
+
+    <section id="juego3" class="cuadroJuego">
+        <h2><a href="player/northcott.html">Northcott</a></h2>
+        <a href="player/northcott.html"><img src="media/northcottExample.png" alt="Northcott example" id="imagenJuego3"></a>
+        <button class="button" onclick="location.href='rules/northcott.html'" id="btnReglasJuego3">Reglas de Northcott</button>
+    </section>
+  </main>
+
+</body>
+</html>
