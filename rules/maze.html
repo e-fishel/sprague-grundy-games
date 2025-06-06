@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reglas de Nim</title>
+    <title>Reglas de Maze</title>
     <style>
         body {
             font-family: monospace, sans-serif;
@@ -69,9 +69,9 @@
         .cuadroJuego img {
             margin-bottom: 10px;
             width: 800px; 
-            height: 165px; 
+            height: 200px; 
             object-fit: cover;
-            object-position: 50% 70%;
+            object-position: 50% 58%;
         }
 
         .controls {
@@ -119,11 +119,12 @@
 
   <main id="cuerpoPrincipal">
     <section id="juego1" class="cuadroJuego">
-        <h1>Nim</h1>
-        <p>En el juego de Nim, hay varias pilas con <em>rocas</em> apiladas. Dos jugadores alternan turnos. En un turno, un jugador elige una roca de cualquier pila y la elimina, junto con todas las rocas por encima de ella.<br>
-        Pierde el jugador que no pueda mover (cuando no quede ninguna roca), o, equivalentemente, gana quien haga el último movimiento.</p>
-        <img src="./../media/nimDemo.gif" alt="Nim"><br>
-        <button class="button" onclick="location.href='./../player/nim.html'">Jugar Nim</button>
+        <h1>Maze</h1>
+        <p>En el juego "Maze", hay varios tableros de varios tamaños, con casillas libres y bloqueadas. Hay fichas en cada tablero, <strong>que no le pertenecen a nadie</strong>, colocadas en casillas libres.</p>
+        <p>Dos jugadores alternan turnos. En un turno, un jugador elige cualquier ficha de los tableros y la desliza hacia abajo o hacia la derecha, como una torre de ajedrez, sin pasar por casillas bloqueadas.<br>
+        Pierde el jugador que no pueda mover (cuando todas las fichas estén contra una esquina), o, equivalentemente, gana quien haga el último movimiento.</p>
+        <img src="./../media/mazeDemo.gif" alt="Maze"><br>
+        <button class="button" onclick="location.href='./../player/maze.html'">Jugar Maze</button>
     </section>
   </main>
 
