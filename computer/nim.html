@@ -150,16 +150,17 @@
     </div>
 
     <script>
-        // let szs = Array(6) // [ 4, 2, 3, 5, 6, 2, 2, 8 ]
-        // for (let i = 0; i < szs.length; i++) {
-        //     szs[i] = 0|Math.random()*7+1;
-        // }
-        let szs = [ 5, 7, 9 ]
+        const presetMaps = [
+            [ 5, 7, 9 ],
+            [ 4, 2, 3, 5, 3, 6, 2, 1 ],
+            Array(3).fill().map(() => 0|Math.random()*10+1),
+            Array(8).fill().map(() => 0|Math.random()*7+1),
+            [ 6 ],
+        ]
         const rawPiles = new URL(window.location.href).searchParams.get('piles')
-        szs = (rawPiles === null || !/^\d(?:,\d+)*$/.test(rawPiles) ? szs : rawPiles.split(',').map(Number))
-        // for (let i = 0; i < szs.length; i++) {
-        //     console.assert(0 <= szs[i] && szs[i] <= 7, 'invalid sizes')
-        // }
+        const presetNo = Number(new URL(window.location.href).searchParams.get('preset') ?? 0)
+        let szs = (rawPiles === null || !/^\d(?:,\d+)*$/.test(rawPiles) ? presetMaps[presetNo] : rawPiles.split(',').map(Number))
+
         let stonesMat = Array(szs.length).fill().map((_, i) => Array(szs[i].length).fill().map(() => -16))
         const gameContainer = document.querySelector('.game-container')
         for (let i = 0; i < szs.length; i++) {
@@ -326,6 +327,21 @@
         actOmniscience() // off
         showAnalysis()
         showPileSizes()
+        if (acc === 0) {
+            isPlayer1 = false
+            spanCurrentPlayer.innerText = (isPlayer1 ? 'Jugador 1' : 'Jugador 2')
+            ;(async () => {
+                let timer_then = ++timer
+                await new Promise(resolve => setTimeout(resolve, 500))
+                const playAt = playComputer()
+                console.assert(playAt !== false) // game not over
+                focused = stonesMat[playAt.i][playAt.j]
+                focused.classList.add('stone-hovered')
+                await new Promise(resolve => setTimeout(resolve, 900))
+                performMove({ timer_then, playAt })
+                if (timer === timer_then) focused.classList.remove('stone-hovered')
+            })()
+        }
     </script>
 
 </body></html>
