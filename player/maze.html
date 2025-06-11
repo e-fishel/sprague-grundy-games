@@ -237,20 +237,13 @@
     </div>
 
     <script>
-        let tables = [
-            // [
-            //     [ 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0 ],
-            //     [ 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1 ],
-            //     [ 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1 ],
-            //     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-            //     [ 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ],
-            // ],
-            [
-                [ 0, 0, 0/* , 1, 1 */ ],
-                [ 0, 1, 0/* , 0, 0 */ ],
-                [ 0, 1, 0/* , 0, 1 */ ],
-                [ 0, 0, 0/* , 0, 0 */ ],
-                [ 1, 0, 0/* , 1, 0 */ ],
+        let presetMaps = [
+            { tables: [ [
+                [ 0, 0, 0 ],
+                [ 0, 1, 0 ],
+                [ 0, 1, 0 ],
+                [ 0, 0, 0 ],
+                [ 1, 0, 0 ],
             ],
             [
                 [ 0, 0, 1, 0, 0 ],
@@ -263,15 +256,38 @@
                 [ 0, 0, 0, 0, 0 ],
                 [ 0, 1, 1, 0, 1 ],
                 [ 1, 1, 1, 0, 0 ],
-            ],
+            ], ],
+            tokens: {
+                0: { k: 0, i: 0, j: 0 },
+                1: { k: 1, i: 0, j: 0 },
+                2: { k: 2, i: 0, j: 0 },
+            } },
+            { tables: [ [
+                [ 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1 ],
+                [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ],
+                [ 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0 ],
+                [ 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ],
+            ], ],
+            tokens: {
+                // 0: { k: 0, i: 0, j: 0 },
+                // 1: { k: 0, i: 1, j: 0 },
+                // 2: { k: 0, i: 0, j: 5 },
+                0: { k: 0, i: 1, j: 0 },
+                1: { k: 0, i: 0, j: 0 },
+                2: { k: 0, i: 1, j: 6 },
+                3: { k: 0, i: 3, j: 2 },
+                4: { k: 0, i: 4, j: 7 },
+                5: { k: 0, i: 4, j: 4 },
+                6: { k: 0, i: 3, j: 5 },
+                7: { k: 0, i: 0, j: 5 },
+            } },
         ]
-        for (let k = 0; k < tables.length; k++) {
-            for (let i = 0; i < tables[k].length; i++) {
-                for (let j = 0; j < tables[k][i].length; j++) {
-                    console.assert(tables[k][i][j] === 0 || tables[k][i][j] === 1, 'invalid cell')
-                }
-            }
-        }
+        const presetNo = Number(new URL(window.location.href).searchParams.get('preset') ?? 0)
+        let { tables, tokens } = presetMaps[presetNo]
+        console.assert(tables.every(table => table.every(row => row.every(i => i === 0 || i === 1))), 'invalid cell')
+        console.assert(tables.every(table => table.every(row => row.length === table[0].length) && table.length > 0 && table[0].length > 0), 'not rectangular')
+
         let tablesMat = Array(tables.length).fill().map((_, k) => Array(tables[k].length).fill().map((_, i) => Array(tables[k][i].length).fill().map((_, j) => -16)))
         let grundy = Array(tables.length).fill().map((_, k) => Array(tables[k].length).fill().map((_, i) => Array(tables[k][i].length).fill().map((_, j) => -16)))
         let grundyTips = Array(tables.length).fill().map((_, k) => Array(tables[k].length).fill().map((_, i) => Array(tables[k][i].length).fill().map((_, j) => -16)))
@@ -327,15 +343,6 @@
                     grundyTips[k][i][j] = tip
                 }
             }
-        }
-        let tokens = {
-            0: { k: 0, i: 0, j: 0 },
-            // 1: { k: 0, i: 1, j: 2 },
-            // 2: { k: 0, i: 3, j: 2 },
-            1: { k: 1, i: 0, j: 0 },
-            // { k: 1, i: 1, j: 0 },
-            // { k: 1, i: 0, j: 2 },
-            2: { k: 2, i: 0, j: 0 },
         }
         for (const [ id, ttuple ] of Object.entries(tokens)) {
             const { k, i, j } = ttuple
@@ -509,17 +516,17 @@
                 }
             }
         }
-        btnRollback.addEventListener('click', e => {
+        const actRollback = e => {
             rollback()
             showAnalysis()
-        })
-        btnReset.addEventListener('click', e => {
+        }
+        const actReset = e => {
             fselToken(-1)
             showPlayable()
             while (plays.length > 0) rollback()
             showAnalysis()
-        })
-        btnOmniscience.addEventListener('click', e => {
+        }
+        const actOmniscience = e => {
             isOmniscient = !isOmniscient
             for (const el of document.querySelectorAll('.omniscient')) {
                 if (isOmniscient)
@@ -528,8 +535,8 @@
                     el.setAttribute('hidden', '')
             }
             showAnalysis()
-        })
-        btnCellModif.addEventListener('click', e => {
+        }
+        const actCellModif = e => {
             isModifMode = !isModifMode
             fselToken(-1)
             showPlayable()
@@ -542,16 +549,20 @@
                     i.classList.remove('modifiable')
                 })
             }
-        })
-        // todo: undo modifs, toggles
-        // todo: add tokens
-
-        for (const el of document.querySelectorAll('.omniscient')) {
-            if (isOmniscient)
-                el.removeAttribute('hidden')
-            else
-                el.setAttribute('hidden', '')
         }
+        btnRollback.addEventListener('click', actRollback)
+        btnReset.addEventListener('click', actReset)
+        btnOmniscience.addEventListener('click', actOmniscience)
+        btnCellModif.addEventListener('click', actCellModif)
+        document.addEventListener('keydown', e => {
+            if (e.keyCode === 'H'.charCodeAt() && e.altKey) return actReset() // alt+h
+            if (e.keyCode === 'T'.charCodeAt() && e.altKey) return actRollback() // alt+t
+            if (e.keyCode === 'N'.charCodeAt() && e.altKey) return actOmniscience() // alt+n
+            if (e.keyCode === 'S'.charCodeAt() && e.altKey) return actCellModif() // alt+s
+        })
+
+        actOmniscience() // on  / off
+        actOmniscience() // off / on
         showAnalysis()
     </script>
 

@@ -242,22 +242,20 @@
     </div>
 
     <script>
-        let rows = [
-            [ 2, 7 ],
-            [ 8, 5 ],
-            [ 3, 7 ],
-            [ 8, 2 ],
-            [ 6, 2 ],
-            [ 1, 8 ],
-            [ 3, 6 ],
-            [ 3, 1 ],
+        let presetMaps = [
+            [ [ 5, 6 ], [ 4, 7 ], [ 4, 7 ], [ 4, 7 ], [ 4, 5 ], [ 2, 5 ], [ 2, 5 ], [ 3, 4 ], ],
+            [ [ 2, 7 ], [ 8, 5 ], [ 3, 7 ], [ 8, 2 ], [ 6, 2 ], [ 1, 8 ], [ 3, 6 ], [ 3, 1 ], ],
+            Array(8).fill().map(() => 0|Math.random()*4).map(sz => { let off = 0|Math.random()*(7-sz); return [ 1+off, 1+off+sz+1 ] }),
+            Array(8).fill().map(() => 0|Math.random()*6).map(sz => { let off = 0|Math.random()*(7-sz); return [ 1+off, 1+off+sz+1 ] }),
+            [ 0, 0, 0, 0, 0, 6, 0, 0 ].map(sz => [ 8-sz-1, 8 ]),
         ]
         const rawRows = new URL(window.location.href).searchParams.get('rows')
-        console.log({ rawRows })
-        rows = (rawRows === null || !/^[1-8],[1-8](?:;[1-8],[1-8]){7}$/.test(rawRows) ? rows : rawRows.split(';').map(i => i.split(',').map(Number)))
+        const presetNo = Number(new URL(window.location.href).searchParams.get('preset') ?? 0)
+        let rows = (rawRows === null || !/^[0-6](?:,[0-6]){7}$/.test(rawRows) ? presetMaps[presetNo] : rawRows.split(',').map(Number).map(sz => { let off = 0|Math.random()*(7-sz); return [ 1+off, 1+off+sz+1 ] }))
         rows = rows.map(([a, b]) => [ a-1, b-1 ]).map(([a, b]) => a < b ? [ a, b ] : [ b, a ])
         console.assert(rows.length === 8, 'not 8 rows')
         console.assert(rows.every(i => i.length === 2), 'rows is wrong format')
+
         let tablesMat = Array(8).fill().map((_, i) => Array(8).fill().map((_, j) => -16))
         let grundy = Array(8).fill().map((_, i) => Array(8).fill().map((_, j) => -16))
         let grundyTips = Array(8).fill().map((_, i) => Array(8).fill().map((_, j) => -16))
